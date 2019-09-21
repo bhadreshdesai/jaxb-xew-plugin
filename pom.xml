@@ -52,7 +52,8 @@
 	</licenses>
 
 	<properties>
-		<jaxb.version>2.2.11</jaxb.version>
+		<activation.version>1.1.1</activation.version>
+		<jaxb.version>2.3.1</jaxb.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
@@ -114,24 +115,6 @@
 				</plugins>
 			</build>
 		</profile>
-		<!-- This profile automatically adds "tools.jar" to the list of dependencies, which is used by Unit Tests. -->
-		<profile>
-			<id>jdk-tools-dependency</id>
-			<activation>
-				<file>
-					<exists>${java.home}/../lib/tools.jar</exists>
-				</file>
-			</activation>
-			<dependencies>
-				<dependency>
-					<groupId>com.sun</groupId>
-					<artifactId>tools</artifactId>
-					<version>1.6.0</version>
-					<scope>system</scope>
-					<systemPath>${java.home}/../lib/tools.jar</systemPath>
-				</dependency>
-			</dependencies>
-		</profile>
 		<!-- This profile publishes code coverage report on https://coveralls.io. -->
 		<profile>
 			<id>travis</id>
@@ -175,16 +158,50 @@
 	</developers>
 
 	<dependencies>
+		<!--
+			Use the modern, modularized JAXB structure as indicated
+			jaxb-bom in dependencyManagement
+			https://github.com/mojohaus/jaxb2-maven-plugin/blob/master/pom.xml
+		-->
+		<!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
+		<dependency>
+			<groupId>javax.xml.bind</groupId>
+			<artifactId>jaxb-api</artifactId>
+			<version>${jaxb.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jaxb</groupId>
+			<artifactId>codemodel</artifactId>
+			<version>${jaxb.version}</version>
+		</dependency>
+
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-xjc</artifactId>
+            <version>${jaxb.version}</version>
+        </dependency>
+
+		<!--
+		Need this to include source files from com/sun/tools/xjc/runtime
+		Source files are missing from 2.3.11 so including 2.2.11
+		https://github.com/eclipse-ee4j/jaxb-ri/issues/1287
+		Include this after including the newer version so we only use sources from this dependency
+		Using com.sun.xml.bind group id to avoid dependency conflict, otherwise maven will only one of the dependencies
+		-->
+		<!-- https://mvnrepository.com/artifact/com.sun.xml.bind/jaxb-xjc -->
 		<dependency>
 			<groupId>com.sun.xml.bind</groupId>
 			<artifactId>jaxb-xjc</artifactId>
-			<version>${jaxb.version}</version>
+			<version>2.2.11</version>
 		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/javax.activation/activation -->
 		<dependency>
-			<groupId>com.sun.xml.bind</groupId>
-			<artifactId>jaxb-core</artifactId>
-			<version>${jaxb.version}</version>
+			<groupId>javax.activation</groupId>
+			<artifactId>activation</artifactId>
+			<version>${activation.version}</version>
 		</dependency>
+
 		<dependency>
 			<groupId>commons-logging</groupId>
 			<artifactId>commons-logging</artifactId>
@@ -224,12 +241,6 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.sun.xml.bind</groupId>
-			<artifactId>jaxb-impl</artifactId>
-			<version>${jaxb.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>2.6</version>
@@ -243,8 +254,8 @@
 				<plugin>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<configuration>
-						<source>1.6</source>
-						<target>1.6</target>
+						<source>1.8</source>
+						<target>1.8</target>
 					</configuration>
 				</plugin>
 				<plugin>
